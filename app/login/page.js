@@ -14,9 +14,10 @@ export default function Login() {
     if (!supabase) { setState({ status: 'error', message: 'The app is not connected to Supabase yet.' }); return; }
     const f = new FormData(e.currentTarget);
     setState({ status: 'sending', message: '' });
-    const { error } = await supabase.auth.signInWithPassword({ email: f.get('email').trim(), password: f.get('password') });
+    const { data, error } = await supabase.auth.signInWithPassword({ email: f.get('email').trim(), password: f.get('password') });
     if (error) { setState({ status: 'error', message: 'We could not log you in. Check your email and password, and confirm your email if you just signed up.' }); return; }
-    router.replace('/home');
+    const { data: prof } = await supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle();
+    router.replace(prof?.role === 'admin' ? '/admin' : '/home');
   }
 
   return (
